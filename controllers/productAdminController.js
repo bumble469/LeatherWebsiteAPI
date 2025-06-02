@@ -1,9 +1,9 @@
 const Product = require('../models/product');
 
-exports.createProduct = async (req, res) => {
+const createProduct = async (req, res) => {
   try {
     const { name, section, category, price, description, stock, variants } = req.body;
-    
+
     if (!name || !category || !price || !description || !stock) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -47,35 +47,54 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+const getAllProducts = async (req, res) => {
+  try {
+    const { section, category, color, size, buckleType, priceRange } = req.query;
+    let filter = {};
 
-exports.getAllProducts = async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.status(200).json(products);
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching products', error: err.message });
+    if (section) filter.section = section.trim();
+    if (category) filter.category = category.trim();
+    if (color) filter['variants.color'] = color.trim();
+    if (size) filter['variants.size'] = size.trim();
+    if (buckleType) filter['variants.buckleType'] = buckleType.trim();
+
+    if (priceRange) {
+      const [minPrice, maxPrice] = priceRange.split('-');
+      filter.price = { $gte: minPrice, $lte: maxPrice };
     }
+
+    const products = await Product.find(filter);
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: "No products found" });
+    }
+
+    res.json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
 };
 
-exports.getProductById = async (req, res) => {
-    try {
-        const productId = req.params.id;
-        const product = await Product.findById(productId);
-
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        res.status(200).json(product);
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching product', error: err.message });
-    }
-};
-
-exports.updateProduct = async (req, res) => {
+const getProductById = async (req, res) => {
   try {
     const productId = req.params.id;
-    
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json(product);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching product', error: err.message });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
     let parsedVariants = [];
     if (req.body.variants) {
       try {
@@ -88,7 +107,7 @@ exports.updateProduct = async (req, res) => {
     const uploadedImageUrls = req.files ? req.files.map(file => file.path) : [];
 
     const updateData = { ...req.body };
-    
+
     if (parsedVariants.length > 0) {
       updateData.variants = parsedVariants.map(variant => {
         const { color, size, buckleType } = variant;
@@ -102,7 +121,6 @@ exports.updateProduct = async (req, res) => {
     if (uploadedImageUrls.length > 0) {
       updateData.images = uploadedImageUrls;
     }
-    // Option 2: Or append new images to existing (you'll need to fetch existing product first and merge)
 
     const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
 
@@ -121,22 +139,29 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+const deleteProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
 
-exports.deleteProduct = async (req, res) => {
-    try {
-        const productId = req.params.id;
+    const deletedProduct = await Product.findByIdAndDelete(productId);
 
-        const deletedProduct = await Product.findByIdAndDelete(productId);
-
-        if (!deletedProduct) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        res.status(200).json({
-            message: 'Product deleted successfully',
-            product: deletedProduct
-        });
-    } catch (err) {
-        res.status(500).json({ message: 'Error deleting product', error: err.message });
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
     }
+
+    res.status(200).json({
+      message: 'Product deleted successfully',
+      product: deletedProduct
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting product', error: err.message });
+  }
+};
+
+module.exports = {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct
 };

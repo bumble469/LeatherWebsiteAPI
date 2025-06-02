@@ -1,6 +1,7 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const {createAccessToken,createRefreshToken} = require('../services/jwtservice');
 
 const otpStore = {};
 
@@ -37,13 +38,34 @@ exports.sendOtp = async(req,res) => {
     }
 };
 
-exports.verifyOtp = (req,res) => {
-    const {email,otp} = req.body;
-    if(otpStore[email] && otpStore[email] == otp){
+exports.verifyOtp = (req, res) => {
+    const { email, otp } = req.body;
+    const payload = { email };
+
+    if (otpStore[email] && otpStore[email] == otp) {
         delete otpStore[email];
-        res.json({message:"OTP Verified Successfully!"})
+
+        const accessToken = createAccessToken(payload);
+        const refreshToken = createRefreshToken(payload);
+
+        res.cookie('accessToken',accessToken,{
+            httpOnly: true,
+            maxAge: 15 * 60 * 1000,
+            secure: false,     
+            sameSite: 'lax',
+        });
+
+        res.cookie('refreshToken',refreshToken,{
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            secure: false,
+            sameSite: 'lax'
+        });
+
+        return res.json({
+            message: "OTP Verified Successfully!",
+        });
+    } else {
+        res.status(400).json({ message: "Invalid or expired OTP" });
     }
-    else{
-        res.status(400).json({message:"Invalid or expired OTP"})
-    }
-}
+};

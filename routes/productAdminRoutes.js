@@ -1,16 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const productAdminController = require('../controllers/productAdminController');
+
+const {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct
+} = require('../controllers/productAdminController');
+
 const upload = require('../services/upload');
+const authenticate = require('../middleware/authenticate');
 
-router.post('/product/add', upload.array('images', 3), productAdminController.createProduct);
+router.post(
+  '/product/add',
+  authenticate,
+  upload.array('images', 3),
+  createProduct
+);
 
-router.get('/', productAdminController.getAllProducts);
+router.get('/adminproducts',authenticate,getAllProducts);
 
-router.get('/:id', productAdminController.getProductById);
+router.get('/adminproductsid/:id', authenticate, getProductById);
 
-router.put('/product/:id', upload.array('images', 5), productAdminController.updateProduct);
+router.put(
+  '/product/:id',
+  authenticate,
+  upload.array('images', 5),
+  updateProduct
+);
 
-router.delete('/product/:id', productAdminController.deleteProduct);
+// Delete product by ID (authenticated)
+router.delete('/product/:id', authenticate, deleteProduct);
 
 module.exports = router;
