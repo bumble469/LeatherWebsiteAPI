@@ -34,14 +34,42 @@ const loginAdmin = async(req, res) => {
 }
 
 const refreshAccessToken = async(req,res) => {
-  const {refreshToken} = req.body;
+  const {refreshToken} = req.cookies;
   try{
     const decoded = await verifyRefreshToken(refreshToken);
     const accessToken = createAccessToken({email:decoded.email});
+    res.cookie('accessToken',accessToken,{
+        httpOnly: true,
+        maxAge: 15 * 60 * 1000,
+        secure: false,     
+        sameSite: 'lax',
+    });
     res.status(200).json({accessToken})
   }catch(err){
     res.status(401).json({message:'Invalid refresh token!'})
   }
 }
 
-module.exports = { checkAdminAccess, refreshAccessToken, loginAdmin };
+const logoutAdmin = async (req, res) => {
+  try {
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: false,    
+      sameSite: 'lax',
+      path: '/',        
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+    });
+    return res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+module.exports = { checkAdminAccess, refreshAccessToken, loginAdmin, logoutAdmin };
