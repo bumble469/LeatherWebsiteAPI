@@ -6,6 +6,8 @@ const productSizeRoute = require('./routes/productAttributesRoute');
 const adminAccessRoute = require('./routes/adminAccessRoute');
 const adminOtpRoute = require('./routes/adminOtpRoute');
 const productAdminRoute = require('./routes/productAdminRoutes');
+const orderRoute = require('./routes/ordersRoute');
+
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -36,6 +38,7 @@ app.use('/api', productSizeRoute);
 app.use('/api', adminAccessRoute);
 app.use('/api', adminOtpRoute);
 app.use('/api', productAdminRoute);
+app.use('/api', orderRoute);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
