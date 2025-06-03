@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {createOrder,verifyPayment} = require('../controllers/orderController');
+const {sendKey,createOrder,verifyPayment} = require('../controllers/orderController');
+
+router.get('/get-razorpay-key', sendKey)
 
 router.post('/checkout', createOrder);
 

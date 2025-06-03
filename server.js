@@ -7,6 +7,7 @@ const adminAccessRoute = require('./routes/adminAccessRoute');
 const adminOtpRoute = require('./routes/adminOtpRoute');
 const productAdminRoute = require('./routes/productAdminRoutes');
 const orderRoute = require('./routes/ordersRoute');
+const orderAdminRoute = require('./routes/orderAdminRoute');
 
 const cookieParser = require('cookie-parser');
 
@@ -39,6 +40,7 @@ app.use('/api', adminAccessRoute);
 app.use('/api', adminOtpRoute);
 app.use('/api', productAdminRoute);
 app.use('/api', orderRoute);
+app.use('/api', orderAdminRoute);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
