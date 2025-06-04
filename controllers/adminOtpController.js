@@ -18,7 +18,6 @@ exports.sendOtp = async(req,res) => {
     if(!email){
         return res.status(400).json({message:"Email is required!"});
     }
-    console.log("Sending OTP to:", email);
     const otp = crypto.randomInt(100000,999999).toString();
     otpStore[email] = otp;
 
