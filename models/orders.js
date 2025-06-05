@@ -38,7 +38,7 @@ const orderSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ['Paid','Requested Cancellation','Cancellation Accepted','Cancellation Rejected'],
+    enum: ['Paid','Requested Cancellation','Cancellation Accepted','Cancellation Rejected','Refunded'],
     default: 'Paid',
   },
 
